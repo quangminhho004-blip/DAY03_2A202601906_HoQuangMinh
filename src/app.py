@@ -57,21 +57,55 @@ def run_react_agent(user_query: str, provider):
     print(f"\n🤖 [REACT AGENT] Câu hỏi: {user_query}")
     step = 0
     
+    # Khởi tạo scratchpad lưu lịch sử Thought/Action/Observation
+    import re
+    scratchpad = f"Question: {user_query}\n"
+    
     while step < MAX_ITERATIONS:
         step += 1
         print(f"\n--- 🔄 Vòng lặp ReAct (Step {step}/{MAX_ITERATIONS}) ---")
         
-        if step == 1:
-            print("🧠 Thought: Câu hỏi này cần tra cứu thời tiết thời gian thực.")
-            print("🛠️ Action: get_weather['Hà Nội']")
+        # 1. LLM sinh ra Thought/Action (hoặc Final Answer)
+        response = provider.generate(scratchpad, system_prompt=REACT_SYSTEM_PROMPT)
+        print(f"🤖 LLM Output:\n{response}")
+        
+        # Ghi nhận vào scratchpad
+        scratchpad += f"{response}\n"
+        
+        # 2. Kiểm tra Final Answer
+        if "Final Answer:" in response:
+            print("🏁 Agent đã đưa ra câu trả lời cuối cùng!")
+            break
             
-            # Thực thi tool
-            obs = get_weather("Hà Nội")
+        # 3. Parse Action
+        action_match = re.search(r"Action:\s*(\w+)\[(.*?)\]", response)
+        if action_match:
+            tool_name = action_match.group(1).strip()
+            tool_arg = action_match.group(2).strip()
+            
+            # Loại bỏ dấu nháy thừa (nếu có) do LLM sinh ra
+            if (tool_arg.startswith("'") and tool_arg.endswith("'")) or (tool_arg.startswith('"') and tool_arg.endswith('"')):
+                tool_arg = tool_arg[1:-1]
+                
+            print(f"🛠️ Thực thi Tool: {tool_name} với tham số: '{tool_arg}'")
+            
+            # Gọi hàm tool
+            if tool_name in AVAILABLE_TOOLS:
+                tool_func = AVAILABLE_TOOLS[tool_name]
+                try:
+                    obs = tool_func(tool_arg)
+                except Exception as e:
+                    obs = f"Lỗi thực thi tool: {str(e)}"
+            else:
+                obs = f"Lỗi: Không tìm thấy công cụ '{tool_name}'."
+                
             print(f"👁️ Observation: {obs}")
             
-        elif step == 2:
-            print("🧠 Thought: Tôi đã có thông tin thời tiết Hà Nội, giờ tôi có thể tư vấn trang phục.")
-            print("🏁 Final Answer: Thời tiết Hà Nội hôm nay 28°C, nắng nhẹ. Bạn nên mặc áo phông thoáng mát!")
+            # Ghi Observation vào scratchpad để LLM phân tích ở bước tiếp theo
+            scratchpad += f"Observation: {obs}\n"
+            
+        else:
+            print("⚠️ Không tìm thấy Action hợp lệ hoặc Final Answer. Dừng lặp để an toàn.")
             break
             
     if step >= MAX_ITERATIONS:
@@ -91,11 +125,13 @@ if __name__ == "__main__":
     tests = load_test_cases()
     print(f"✅ Đã tải thành công {len(tests)} Test Cases từ config/test_cases.json\n")
     
-    # Chạy thử câu test số 3
-    sample_query = tests[2]["question"]
-    
     print("--- DEMO 1: CHẠY TRÊN CHATBOT BASELINE ---")
-    run_baseline_chatbot(sample_query, provider)
+    for test in tests:
+        print(f"\n[Test Case {test['id']}] {test['category']}")
+        run_baseline_chatbot(test["question"], provider)
+        print("-" * 50)
     
+    # Chạy thử câu test số 3 cho React Agent
+    sample_query = tests[2]["question"]
     print("\n--- DEMO 2: CHẠY TRÊN REACT AGENT ---")
     run_react_agent(sample_query, provider)
