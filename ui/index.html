@@ -396,8 +396,20 @@
 
     <script>
         let currentMode = 'baseline'; // 'baseline' or 'react'
+        let chatHistories = {
+            'baseline': '',
+            'react': ''
+        };
 
         window.onload = async function() {
+            // Khởi tạo lời chào cho Baseline
+            chatHistories['baseline'] = `
+                <div class="message ai">
+                    <div class="avatar">🤖</div>
+                    <div class="bubble">Xin chào! Tôi là Chatbot Baseline (Cấp 2). Tôi trả lời dựa trên kiến thức tĩnh và không có khả năng dùng Tool. Bạn cần hỏi gì nào?</div>
+                </div>`;
+
+            // Khởi tạo lời chào cho ReAct
             try {
                 const response = await fetch('http://127.0.0.1:5000/api/orders');
                 if (!response.ok) throw new Error("Network response was not ok");
@@ -429,14 +441,25 @@
                 tableHtml += `</tbody></table>`;
                 tableHtml += `<div style="margin-top: 15px; font-size: 0.95em;">Bạn muốn tôi tra cứu chi tiết đơn hàng nào hay cần xử lý đổi trả? (VD: Hãy tra cứu đơn DH001)</div>`;
                 
-                appendMessage('ai', tableHtml, true);
+                chatHistories['react'] = `<div class="message ai"><div class="avatar">🧠</div><div class="bubble">${tableHtml}</div></div>`;
             } catch (error) {
                 console.error("Lỗi khi tải đơn hàng", error);
-                appendMessage('ai', "Chào bạn, tôi là trợ lý ảo hỗ trợ tra cứu đơn hàng và đổi/trả. Bạn cần hỗ trợ đơn hàng nào?");
+                chatHistories['react'] = `
+                    <div class="message ai">
+                        <div class="avatar">🧠</div>
+                        <div class="bubble">Chào bạn, tôi là trợ lý ảo hỗ trợ tra cứu đơn hàng và đổi/trả. Bạn cần hỗ trợ đơn hàng nào?</div>
+                    </div>`;
             }
+
+            // Restore for currentMode
+            document.getElementById('chat-messages').innerHTML = chatHistories[currentMode];
         }
 
         function setMode(mode) {
+            // Save current state before switching
+            const chatMessages = document.getElementById('chat-messages');
+            chatHistories[currentMode] = chatMessages.innerHTML;
+
             currentMode = mode;
             
             // Update UI
@@ -451,15 +474,9 @@
                 document.getElementById('current-mode-title').innerText = "ReAct Agent Mode";
             }
 
-            // Clear chat and add welcome message
-            const chatMessages = document.getElementById('chat-messages');
-            chatMessages.innerHTML = '';
-            
-            const welcomeText = mode === 'baseline' 
-                ? "Xin chào! Tôi là Chatbot Baseline (Cấp 2). Tôi trả lời dựa trên kiến thức tĩnh và không có khả năng dùng Tool. Bạn cần hỏi gì nào?"
-                : "Xin chào! Tôi là ReAct Agent (Cấp 3). Tôi có thể suy luận và gọi Tool (như search_order, get_order_status). Bạn cần hỗ trợ đơn hàng nào?";
-                
-            appendMessage('ai', welcomeText);
+            // Restore new state
+            chatMessages.innerHTML = chatHistories[currentMode] || '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         function handleKeyPress(e) {
