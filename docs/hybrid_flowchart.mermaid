@@ -1,0 +1,22 @@
+flowchart TD
+    A[Người dùng gửi câu hỏi] --> B{Câu hỏi đơn giản hay phức tạp?}
+    B -->|Đơn giản| C[Chatbot Path]
+    B -->|Phức tạp| D[ReAct Agent Path]
+
+    C --> C1[Phân tích ngữ cảnh câu hỏi]
+    C1 --> C2[Tìm câu trả lời trực tiếp]
+    C2 --> C3[Trả lời người dùng ngay]
+    C3 --> E[Kết thúc]
+
+    D --> D1[Phân tích yêu cầu & xác định mục tiêu]
+    D1 --> D2[Chọn tool phù hợp]
+    D2 --> D3[Thực hiện hành động tool]
+    D3 --> D4[Nhận kết quả & đánh giá]
+    D4 --> D5[Quyết định bước tiếp theo hoặc trả lời]
+    D5 --> E
+
+    style C fill:#d4f1f9,stroke:#1f77b4,stroke-width:2px
+    style D fill:#fdebd0,stroke:#d2691e,stroke-width:2px
+    style B fill:#f6f6f6,stroke:#888,stroke-width:1px
+    style A fill:#ffffff,stroke:#444,stroke-width:1px
+    style E fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
