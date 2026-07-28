@@ -1,0 +1,21 @@
+order_id,event_date,event_status,description
+DH001,2026-07-25,completed,Đã đặt hàng thành công
+DH001,2026-07-25,completed,Đã xác nhận thanh toán
+DH001,2026-07-26,completed,Đơn hàng đã được đóng gói
+DH001,2026-07-28,current,Đang vận chuyển
+DH002,2026-07-24,completed,Đã đặt hàng thành công
+DH002,2026-07-24,completed,Đã xác nhận thanh toán
+DH002,2026-07-25,completed,Đơn hàng đã được đóng gói
+DH002,2026-07-26,completed,Đang vận chuyển
+DH002,2026-07-26,completed,Giao hàng thành công
+DH003,2026-07-27,completed,Đã đặt hàng thành công
+DH003,2026-07-27,completed,Đã xác nhận thanh toán
+DH003,2026-07-28,current,Đang chờ xử lý
+DH004,2026-07-23,completed,Đã đặt hàng thành công
+DH004,2026-07-23,completed,Đã xác nhận thanh toán
+DH004,2026-07-23,cancelled,Yêu cầu hủy được chấp nhận
+DH005,2026-07-20,completed,Đã đặt hàng thành công
+DH005,2026-07-20,completed,Đã xác nhận thanh toán
+DH005,2026-07-21,completed,Đơn hàng đã được đóng gói
+DH005,2026-07-23,completed,Đang vận chuyển
+DH005,2026-07-24,completed,Giao hàng thành công
