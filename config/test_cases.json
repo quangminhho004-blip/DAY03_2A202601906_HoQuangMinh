@@ -4,125 +4,175 @@
     "category": "🟢 Đơn giản (1 Tool)",
     "question": "Đơn hàng DH001 có những thông tin gì?",
     "expected_tools": ["search_order"],
-    "expected_behavior": "Agent gọi search_order('DH001') để lấy sản phẩm, giá, trạng thái, ngày đặt."
+    "expected_behavior": "Agent gọi search_order('DH001'). Trả về đúng sản phẩm 'Áo sơ mi trắng size M', giá 350,000 VNĐ, trạng thái 'Đang giao', ngày đặt 25/07/2026.",
+    "expected_error_code": null
   },
   {
     "id": 2,
     "category": "🟢 Đơn giản (1 Tool)",
-    "question": "Cho tôi biết giá và địa chỉ giao của đơn DH003.",
+    "question": "Cho tôi biết giá và địa chỉ giao của đơn DH005.",
     "expected_tools": ["search_order"],
-    "expected_behavior": "Agent gọi search_order('DH003')."
+    "expected_behavior": "Agent gọi search_order('DH005'). Trả về Macbook Air M2 13 inch, giá 28,900,000 VNĐ, địa chỉ '56 Trần Hưng Đạo, Quận 5, TP.HCM'.",
+    "expected_error_code": null
   },
   {
     "id": 3,
     "category": "🟢 Đơn giản (1 Tool)",
     "question": "Đơn hàng DH002 hiện đang ở bước nào rồi?",
     "expected_tools": ["get_order_status"],
-    "expected_behavior": "Agent gọi get_order_status('DH002') để lấy timeline, không gọi search_order."
+    "expected_behavior": "Agent gọi get_order_status('DH002'), không gọi search_order. Timeline đọc từ order_events.csv, bước cuối 'Giao hàng thành công' (completed), current_status = 'Đã giao'.",
+    "expected_error_code": null
   },
   {
     "id": 4,
     "category": "🟢 Đơn giản (1 Tool)",
-    "question": "Xem timeline giao hàng chi tiết của đơn DH001 giúp tôi.",
+    "question": "Xem timeline giao hàng chi tiết của đơn DH003 giúp tôi.",
     "expected_tools": ["get_order_status"],
-    "expected_behavior": "Agent gọi get_order_status('DH001')."
+    "expected_behavior": "Agent gọi get_order_status('DH003'). Timeline dừng ở bước 'Đang chờ xử lý' (event_status='current'), current_status = 'Đang xử lý', chưa có bước giao hàng.",
+    "expected_error_code": null
   },
   {
     "id": 5,
     "category": "🟢 Đơn giản (1 Tool)",
-    "question": "Tôi muốn trả lại đơn DH002 vì giày bị lỗi.",
+    "question": "Tôi muốn trả lại đơn DH002 vì giày bị lỗi keo đế, bong tróc.",
     "expected_tools": ["process_return"],
-    "expected_behavior": "Agent gọi process_return('DH002', 'Sản phẩm lỗi')."
+    "expected_behavior": "Agent gọi process_return('DH002', 'giày bị lỗi keo đế, bong tróc') (lý do >= 5 ký tự). Vì DH002 đang 'Đã giao' và chưa có yêu cầu đổi/trả nào trong returns.csv, tool trả success=True, sinh return_id mới (RT001), refund_amount 890,000 VNĐ.",
+    "expected_error_code": null
   },
   {
     "id": 6,
-    "category": "🟡 Multi-step (Nhiều Tool / Suy luận)",
-    "question": "Đơn DH002 giao chưa? Nếu giao rồi thì tôi muốn đổi trả vì size không vừa.",
-    "expected_tools": ["get_order_status", "process_return"],
-    "expected_behavior": "Agent gọi get_order_status hoặc search_order('DH002') để xác nhận đã giao, sau đó gọi process_return('DH002', 'Size không vừa')."
+    "category": "🟢 Đơn giản (Chỉ cần LLM, không cần Tool)",
+    "question": "Chính sách đổi trả hàng thường mất bao lâu để hoàn tiền theo thông lệ chung?",
+    "expected_tools": [],
+    "expected_behavior": "Câu hỏi chung chung, không gắn với một đơn hàng cụ thể. Agent trả lời bằng kiến thức nền, KHÔNG gọi tool nào (không có order_id để truyền vào).",
+    "expected_error_code": null
   },
   {
     "id": 7,
     "category": "🟡 Multi-step (Nhiều Tool / Suy luận)",
-    "question": "So sánh trạng thái của đơn DH001 và DH003 xem đơn nào sắp được giao hơn.",
-    "expected_tools": ["get_order_status", "get_order_status"],
-    "expected_behavior": "Agent gọi get_order_status('DH001') và get_order_status('DH003') rồi so sánh timeline để trả lời."
+    "question": "Đơn DH005 giao chưa? Nếu giao rồi thì tôi muốn đổi trả vì máy bị lỗi bàn phím, một số phím không nhận.",
+    "expected_tools": ["get_order_status hoặc search_order", "process_return"],
+    "expected_behavior": "Bước 1: Agent tra cứu DH005, thấy trạng thái 'Đã giao'. Bước 2: gọi process_return('DH005', 'máy bị lỗi bàn phím, một số phím không nhận') → thành công, refund_amount 28,900,000 VNĐ. Agent không được bỏ qua bước xác nhận trạng thái trước khi gọi process_return.",
+    "expected_error_code": null
   },
   {
     "id": 8,
     "category": "🟡 Multi-step (Nhiều Tool / Suy luận)",
-    "question": "Tôi có 2 đơn DH002 và DH004, đơn nào trong 2 đơn này có thể đổi/trả được?",
-    "expected_tools": ["search_order", "search_order"],
-    "expected_behavior": "Agent tra cứu cả 2 đơn (search_order hoặc get_order_status) để xem trạng thái, rồi suy luận DH002 (đã giao) đủ điều kiện còn DH004 (đã hủy) thì không, có thể gọi process_return để xác nhận nhưng không bắt buộc."
+    "question": "So sánh đơn DH001 và DH003 xem đơn nào sắp được giao hơn.",
+    "expected_tools": ["get_order_status", "get_order_status"],
+    "expected_behavior": "Agent gọi get_order_status('DH001') và get_order_status('DH003'), rồi tự suy luận: DH001 đang 'Đang giao', đã có bước 'Đang vận chuyển' (current); DH003 mới 'Đang xử lý', còn chưa có ngày giao dự kiến. Kết luận đúng: DH001 sắp giao hơn.",
+    "expected_error_code": null
   },
   {
     "id": 9,
     "category": "🟡 Multi-step (Nhiều Tool / Suy luận)",
-    "question": "Kiểm tra chi tiết đơn DH001 giúp tôi, và nếu chưa hài lòng thì tôi có đổi trả được không?",
-    "expected_tools": ["search_order"],
-    "expected_behavior": "Agent gọi search_order('DH001') thấy trạng thái 'Đang giao', suy luận và trả lời KHÔNG đủ điều kiện đổi/trả (không nhất thiết phải gọi process_return, nhưng nếu gọi thì tool sẽ trả lỗi 'đang trong quá trình giao')."
+    "question": "Tôi có 2 đơn DH002 và DH004, đơn nào trong 2 đơn này có thể đổi/trả được?",
+    "expected_tools": ["search_order hoặc get_order_status (x2)"],
+    "expected_behavior": "Agent tra cứu cả 2 đơn trước khi trả lời. DH002 status='Đã giao' → đủ điều kiện đổi/trả; DH004 status='Đã hủy' → KHÔNG đủ điều kiện (nếu gọi process_return('DH004',...) sẽ nhận error_code ORDER_CANCELLED). Agent không được khẳng định cả 2 đơn đều đổi/trả được.",
+    "expected_error_code": null
   },
   {
     "id": 10,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Đơn hàng DH999 của tôi tới đâu rồi?",
-    "expected_tools": ["search_order hoặc get_order_status"],
-    "expected_behavior": "Tool trả về lỗi 'Không tìm thấy đơn hàng'. Agent không được bịa thông tin, phải báo lại lỗi cho người dùng."
+    "category": "🟡 Multi-step (Nhiều Tool / Suy luận)",
+    "question": "Tôi muốn đổi trả đơn DH001 vì áo bị lem màu khi giặt, và cho tôi biết luôn đơn DH005 đã giao tới đâu chưa.",
+    "expected_tools": ["process_return", "get_order_status hoặc search_order"],
+    "expected_behavior": "Yêu cầu gộp 2 việc không liên quan trên 2 đơn khác nhau. process_return('DH001', 'áo bị lem màu khi giặt') phải trả lỗi ORDER_NOT_DELIVERED (DH001 đang 'Đang giao', chưa nhận hàng); song song đó agent vẫn tra cứu DH005 (status 'Đã giao') để trả lời câu hỏi thứ hai. Agent không được trộn lẫn kết quả của 2 đơn hoặc báo nhầm đơn DH001 đổi/trả thành công.",
+    "expected_error_code": "ORDER_NOT_DELIVERED"
   },
   {
     "id": 11,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Tôi muốn trả đơn DH001, tôi không thích màu áo nữa.",
-    "expected_tools": ["process_return"],
-    "expected_behavior": "Agent gọi process_return('DH001', ...), tool trả lỗi vì đơn đang giao (chưa nhận hàng). Agent phải truyền đạt đúng lý do từ chối, không tự ý xác nhận đổi/trả thành công."
+    "category": "🟡 Multi-step (Nhiều Tool / Suy luận - Bẫy trạng thái)",
+    "question": "Tôi muốn đổi trả đơn DH002 vì hộp bị móp méo khi nhận hàng. Sau khi gửi xong, cho tôi gửi thêm một yêu cầu đổi/trả DH002 nữa vì tôi vẫn chưa an tâm.",
+    "expected_tools": ["process_return", "process_return"],
+    "expected_behavior": "Lần gọi đầu process_return('DH002', 'hộp bị móp méo khi nhận hàng') thành công, tạo return_id mới. Lần gọi thứ hai với cùng order_id phải nhận error_code ALREADY_RETURNED (do returns.csv đã có bản ghi DH002). Agent phải truyền đạt đúng là yêu cầu thứ hai bị từ chối vì đã có yêu cầu trước đó, KHÔNG được báo 'đã tạo thành công' lần 2.",
+    "expected_error_code": "ALREADY_RETURNED"
   },
   {
     "id": 12,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Cho tôi đổi trả đơn DH004, tôi đổi ý không muốn hủy nữa.",
-    "expected_tools": ["process_return"],
-    "expected_behavior": "Agent gọi process_return('DH004'), tool báo lỗi vì đơn đã bị hủy. Agent không được xác nhận đổi/trả."
+    "category": "🔴 Bẫy (Không tìm thấy dữ liệu)",
+    "question": "Đơn hàng DH999 của tôi tới đâu rồi?",
+    "expected_tools": ["search_order hoặc get_order_status"],
+    "expected_behavior": "DH999 không tồn tại trong orders.csv → tool trả error_code ORDER_NOT_FOUND. Agent KHÔNG được bịa trạng thái/ngày giao, phải báo đúng là không tìm thấy đơn và đề nghị kiểm tra lại mã.",
+    "expected_error_code": "ORDER_NOT_FOUND"
   },
   {
     "id": 13,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Tôi muốn trả đơn DH002 lần nữa vì vẫn chưa thấy hoàn tiền.",
+    "category": "🔴 Bẫy (Sai trạng thái - đơn đang giao)",
+    "question": "Tôi muốn trả đơn DH001, tôi không thích màu áo nữa.",
     "expected_tools": ["process_return"],
-    "expected_behavior": "Bẫy: đơn DH002 đã nằm sẵn trong danh sách 'đã yêu cầu đổi/trả' của tool. Agent gọi process_return('DH002') và phải truyền đạt đúng cảnh báo 'đã yêu cầu đổi/trả trước đó', không được báo thành công lần 2."
+    "expected_behavior": "process_return('DH001', ...) → status='Đang giao' nên tool trả error_code ORDER_NOT_DELIVERED ('đang trong quá trình giao'). Agent phải truyền đạt đúng lý do từ chối, không tự ý xác nhận đổi/trả thành công.",
+    "expected_error_code": "ORDER_NOT_DELIVERED"
   },
   {
     "id": 14,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Thời tiết ở Hà Nội hôm nay thế nào?",
-    "expected_tools": [],
-    "expected_behavior": "Bẫy: không có tool nào phù hợp (bộ tool chỉ phục vụ tra cứu đơn hàng). Agent KHÔNG được gọi search_order/get_order_status/process_return, phải trả lời rằng không hỗ trợ hoặc không có dữ liệu."
+    "category": "🔴 Bẫy (Sai trạng thái - đơn đang xử lý)",
+    "question": "Trả đơn DH003 giúp tôi, tôi không cần cái túi này nữa.",
+    "expected_tools": ["process_return"],
+    "expected_behavior": "process_return('DH003', ...) → status='Đang xử lý' (chưa giao) nên tool trả error_code ORDER_NOT_DELIVERED. Agent không được xác nhận yêu cầu đổi/trả.",
+    "expected_error_code": "ORDER_NOT_DELIVERED"
   },
   {
     "id": 15,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Đơn hàng của tôi sao rồi?",
-    "expected_tools": [],
-    "expected_behavior": "Bẫy: thiếu order_id bắt buộc. Agent phải hỏi lại mã đơn hàng thay vì tự bịa order_id hoặc gọi tool với giá trị rỗng/ngẫu nhiên."
+    "category": "🔴 Bẫy (Sai trạng thái - đơn đã hủy)",
+    "question": "Cho tôi đổi trả đơn DH004, tôi đổi ý không muốn hủy nữa.",
+    "expected_tools": ["process_return"],
+    "expected_behavior": "process_return('DH004', ...) → status='Đã hủy' nên tool trả error_code ORDER_CANCELLED. Agent không được xác nhận đổi/trả cho một đơn đã hủy; nên giải thích khách cần đặt đơn mới nếu muốn mua lại.",
+    "expected_error_code": "ORDER_CANCELLED"
   },
   {
     "id": 16,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Cho tôi hủy đơn hàng DH003 giúp với.",
-    "expected_tools": [],
-    "expected_behavior": "Bẫy: hệ thống không có tool 'hủy đơn' (chỉ có process_return để đổi/trả hàng đã giao). Agent không được gọi nhầm process_return cho yêu cầu hủy, phải giải thích không có chức năng này qua tool hiện có."
+    "category": "🔴 Bẫy (Thiếu lý do đổi/trả)",
+    "question": "Tôi muốn trả đơn DH002.",
+    "expected_tools": ["process_return"],
+    "expected_behavior": "Không có lý do trong câu hỏi. Nếu agent gọi process_return('DH002', '') sẽ nhận error_code MISSING_REASON. Hành vi ĐÚNG nên là: agent hỏi lại lý do đổi/trả TRƯỚC khi gọi tool, thay vì tự bịa một lý do để điền vào.",
+    "expected_error_code": "MISSING_REASON"
   },
   {
     "id": 17,
-    "category": "🔴 Edge Case (Bẫy Guardrail)",
-    "question": "Trạng thái đơn dh002 (viết thường) thế nào rồi?",
-    "expected_tools": ["get_order_status"],
-    "expected_behavior": "Kiểm tra xử lý input không chuẩn hoa/thường: Agent gọi get_order_status('dh002'), tool tự động .upper() nên vẫn trả kết quả đúng cho DH002."
+    "category": "🔴 Bẫy (Lý do quá ngắn)",
+    "question": "Trả đơn DH005 lý do: lỗi.",
+    "expected_tools": ["process_return"],
+    "expected_behavior": "Lý do 'lỗi' chỉ có 3 ký tự (< 5 ký tự tối thiểu) nên process_return('DH005', 'lỗi') trả error_code REASON_TOO_SHORT. Agent phải yêu cầu khách mô tả lý do chi tiết hơn thay vì tự động thêm chữ cho đủ hoặc báo thành công.",
+    "expected_error_code": "REASON_TOO_SHORT"
   },
   {
     "id": 18,
-    "category": "🟢 Đơn giản (Chỉ cần LLM)",
-    "question": "Chính sách đổi trả hàng thường mất bao lâu để hoàn tiền theo thông lệ chung?",
+    "category": "🔴 Bẫy (Ngoài phạm vi - không có tool phù hợp)",
+    "question": "Thời tiết ở Hà Nội hôm nay thế nào, có mưa không?",
     "expected_tools": [],
-    "expected_behavior": "Câu hỏi chung chung không gắn với đơn hàng cụ thể, Agent có thể trả lời bằng kiến thức sẵn có mà không cần gọi tool nào."
+    "expected_behavior": "Bẫy: hệ thống tools.py chỉ có search_order/get_order_status/process_return, KHÔNG có get_weather. Agent không được gọi bất kỳ tool tra cứu đơn hàng nào cho câu hỏi này (dù prompt/demo cũ trong prompts.py và app.py còn nhắc tới get_weather/search_flights), phải trả lời rằng nằm ngoài phạm vi hỗ trợ (chăm sóc đơn hàng).",
+    "expected_error_code": null
+  },
+  {
+    "id": 19,
+    "category": "🔴 Bẫy (Thiếu tham số bắt buộc)",
+    "question": "Đơn hàng của tôi sao rồi?",
+    "expected_tools": [],
+    "expected_behavior": "Thiếu order_id bắt buộc cho cả search_order và get_order_status. Agent phải hỏi lại mã đơn hàng, KHÔNG được tự bịa order_id hoặc gọi tool với chuỗi rỗng/ngẫu nhiên (sẽ trả về ORDER_NOT_FOUND một cách vô nghĩa).",
+    "expected_error_code": null
+  },
+  {
+    "id": 20,
+    "category": "🔴 Bẫy (Tool không tồn tại - yêu cầu hủy đơn)",
+    "question": "Cho tôi hủy đơn hàng DH001 giúp với, tôi chưa muốn nhận hàng nữa.",
+    "expected_tools": [],
+    "expected_behavior": "Hệ thống KHÔNG có tool 'hủy đơn' — process_return chỉ dùng để đổi/trả hàng ĐÃ GIAO (status='Đã giao'). Agent không được gọi nhầm process_return('DH001', ...) như một cách hủy đơn (nếu gọi sẽ chỉ nhận ORDER_NOT_DELIVERED, không phải hủy đơn thật). Agent phải giải thích không có chức năng hủy đơn qua kênh này và hướng dẫn khách liên hệ hỗ trợ khác.",
+    "expected_error_code": null
+  },
+  {
+    "id": 21,
+    "category": "🔴 Bẫy (Chuẩn hóa input - chữ thường & khoảng trắng thừa)",
+    "question": "cho tôi hỏi trạng thái đơn   dh002   với, cảm ơn shop nhiều",
+    "expected_tools": ["get_order_status"],
+    "expected_behavior": "Kiểm tra khả năng trích xuất order_id đúng dù viết thường và có khoảng trắng thừa. Agent gọi get_order_status('dh002') hoặc tương đương; tool tự .strip().upper() nên vẫn trả đúng kết quả của DH002 ('Đã giao'). Agent không được báo ORDER_NOT_FOUND.",
+    "expected_error_code": null
+  },
+  {
+    "id": 22,
+    "category": "🔴 Bẫy (Mã đơn sai định dạng)",
+    "question": "Xem giúp tôi đơn hàng DH-002 (tôi ghi có dấu gạch ngang cho dễ đọc).",
+    "expected_tools": ["search_order"],
+    "expected_behavior": "tools.py chỉ strip khoảng trắng và upper(), KHÔNG loại bỏ dấu gạch ngang. 'DH-002' != 'DH002' trong dữ liệu nên tool trả ORDER_NOT_FOUND cho 'DH-002'. Hành vi tốt: agent nhận ra khả năng người dùng gõ nhầm định dạng và gợi ý thử lại với mã 'DH002' thay vì chỉ báo lỗi khô khan.",
+    "expected_error_code": "ORDER_NOT_FOUND"
   }
 ]

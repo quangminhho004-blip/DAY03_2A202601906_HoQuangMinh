@@ -502,41 +502,43 @@
             if (el) el.remove();
         }
 
-        function simulateAIResponse(userMessage) {
-            const lowerMsg = userMessage.toLowerCase();
-            
-            if (currentMode === 'baseline') {
-                // Mock Baseline behavior (Không có tool)
-                if (lowerMsg.includes('dh001')) {
-                    appendMessage('ai', "Rất tiếc, ở chế độ Baseline tôi không có quyền truy cập vào hệ thống tra cứu đơn hàng để kiểm tra DH001. Vui lòng liên hệ bộ phận hỗ trợ hoặc sử dụng công cụ tra cứu chính thức.");
-                } else {
-                    appendMessage('ai', "Cảm ơn câu hỏi của bạn. Quy trình mua hàng và đổi trả của chúng tôi thường mất 3-5 ngày làm việc để hoàn tất. Bạn vui lòng cung cấp thêm mã đơn hàng nếu cần tra cứu nhé, tuy nhiên tôi sẽ cần hệ thống ngoài để kiểm tra.");
-                }
-            } else {
-                // Mock ReAct Agent behavior
-                let responseHtml = '';
+        async function simulateAIResponse(userMessage) {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: userMessage, mode: currentMode })
+                });
                 
-                if (lowerMsg.includes('dh001')) {
-                    responseHtml = `
-                        <div class="react-thought">🧠 Thought: Người dùng muốn tra cứu thông tin đơn hàng DH001. Tôi cần gọi tool search_order.</div>
-                        <div class="react-action">🛠️ Action: search_order['DH001']</div>
-                        <div class="react-action" style="color: #60a5fa">👁️ Observation: Đơn hàng DH001 - Trạng thái: Đang giao - Giá: 2.000.000 VNĐ</div>
-                        <div class="react-thought">🧠 Thought: Tôi đã có đủ thông tin để trả lời người dùng.</div>
-                        <div>🏁 Đơn hàng DH001 của bạn hiện đang trong trạng thái "Đang giao". Giá trị đơn hàng là 2.000.000 VNĐ. Bạn có cần hỗ trợ gì thêm không?</div>
-                    `;
-                } else if (lowerMsg.includes('đổi') || lowerMsg.includes('trả')) {
-                    responseHtml = `
-                        <div class="react-thought">🧠 Thought: Người dùng muốn đổi trả. Tôi cần mã đơn hàng để dùng tool process_return.</div>
-                        <div>Để xử lý đổi/trả hàng, bạn vui lòng cung cấp mã đơn hàng (VD: DH002) và lý do đổi trả nhé!</div>
-                    `;
-                } else {
-                    responseHtml = `
-                        <div class="react-thought">🧠 Thought: Câu hỏi chung chung, không cần tra cứu dữ liệu.</div>
-                        <div>Tôi có thể giúp bạn tra cứu trạng thái đơn hàng hoặc thực hiện yêu cầu đổi trả. Vui lòng cung cấp mã đơn hàng!</div>
-                    `;
-                }
+                const data = await response.json();
                 
-                appendMessage('ai', responseHtml, true);
+                if (currentMode === 'baseline') {
+                    appendMessage('ai', data.response);
+                } else {
+                    let responseHtml = '';
+                    for (const step of data.steps) {
+                        if (step.type === 'llm') {
+                            const lines = step.content.split('\\n');
+                            for (const line of lines) {
+                                if (line.startsWith('Thought:')) {
+                                    responseHtml += `<div class="react-thought">🧠 ${line}</div>`;
+                                } else if (line.startsWith('Action:')) {
+                                    responseHtml += `<div class="react-action">🛠️ ${line}</div>`;
+                                } else if (line.startsWith('Final Answer:')) {
+                                    responseHtml += `<div>🏁 ${line.replace('Final Answer:', '')}</div>`;
+                                } else if (line.trim() !== '') {
+                                    responseHtml += `<div>${line}</div>`;
+                                }
+                            }
+                        } else if (step.type === 'tool') {
+                            responseHtml += `<div class="react-action" style="color: #60a5fa">👁️ ${step.content}</div>`;
+                        }
+                    }
+                    if (!responseHtml) responseHtml = "Lỗi xử lý phản hồi từ Agent.";
+                    appendMessage('ai', responseHtml, true);
+                }
+            } catch (error) {
+                appendMessage('ai', "❌ Không thể kết nối tới Backend. Hãy chắc chắn bạn đã chạy lệnh `python src/server.py` nhé.");
             }
         }
     </script>
