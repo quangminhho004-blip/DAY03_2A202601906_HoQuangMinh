@@ -378,12 +378,6 @@
 
             <div class="chat-messages" id="chat-messages">
                 <!-- Welcome Message -->
-                <div class="message ai" style="animation-delay: 0.1s">
-                    <div class="avatar">🤖</div>
-                    <div class="bubble">
-                        Xin chào! Tôi là trợ lý ảo hỗ trợ tra cứu đơn hàng và đổi/trả. Bạn cần tôi giúp gì hôm nay?
-                    </div>
-                </div>
             </div>
 
             <div class="chat-input-container">
@@ -402,6 +396,45 @@
 
     <script>
         let currentMode = 'baseline'; // 'baseline' or 'react'
+
+        window.onload = async function() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/orders');
+                if (!response.ok) throw new Error("Network response was not ok");
+                const orders = await response.json();
+                
+                let tableHtml = `<div style="margin-bottom: 15px">Chào bạn, tôi là trợ lý ảo. Dưới đây là danh sách đơn hàng demo có sẵn trong kho dữ liệu lúc này:</div>`;
+                tableHtml += `<table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; background: rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <th style="padding: 10px; text-align: left;">Mã ĐH</th>
+                            <th style="padding: 10px; text-align: left;">Sản phẩm</th>
+                            <th style="padding: 10px; text-align: left;">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                orders.forEach(o => {
+                    let statusColor = o.status === 'Đã giao' ? '#4ade80' : 
+                                      o.status === 'Đã hủy' ? '#f87171' : '#fbbf24';
+                    tableHtml += `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 10px; color: #a78bfa"><strong>${o.order_id}</strong></td>
+                            <td style="padding: 10px;">${o.product}</td>
+                            <td style="padding: 10px; color: ${statusColor}; font-weight: bold;">${o.status}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `</tbody></table>`;
+                tableHtml += `<div style="margin-top: 15px; font-size: 0.95em;">Bạn muốn tôi tra cứu chi tiết đơn hàng nào hay cần xử lý đổi trả? (VD: Hãy tra cứu đơn DH001)</div>`;
+                
+                appendMessage('ai', tableHtml, true);
+            } catch (error) {
+                console.error("Lỗi khi tải đơn hàng", error);
+                appendMessage('ai', "Chào bạn, tôi là trợ lý ảo hỗ trợ tra cứu đơn hàng và đổi/trả. Bạn cần hỗ trợ đơn hàng nào?");
+            }
+        }
 
         function setMode(mode) {
             currentMode = mode;
