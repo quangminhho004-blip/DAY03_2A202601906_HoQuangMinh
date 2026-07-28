@@ -1,6 +1,6 @@
 order_id,product,price,status,date,address,delivery_date,cancel_reason
-DH001,Áo sơ mi trắng size M,350000,Đang giao,25/07/2026,123 Nguyễn Trãi, Quận 1, TP.HCM,28/07/2026,
-DH002,Giày thể thao Nike Air Max,890000,Đã giao,24/07/2026,45 Lê Văn Việt, Quận 9, TP.HCM,26/07/2026,
-DH003,Túi xách da nam cao cấp,1250000,Đang xử lý,27/07/2026,78 Điện Biên Phủ, Quận 3, TP.HCM,,
-DH004,Đồng hồ Casio Edifice EFV-100,2500000,Đã hủy,23/07/2026,,,,Khách hàng yêu cầu hủy
-DH005,Macbook Air M2 13 inch,28900000,Đã giao,20/07/2026,56 Trần Hưng Đạo, Quận 5, TP.HCM,24/07/2026,
+DH001,Áo sơ mi trắng size M,350000,Đang giao,25/07/2026,"123 Nguyễn Trãi, Quận 1, TP.HCM",28/07/2026,
+DH002,Giày thể thao Nike Air Max,890000,Đã giao,24/07/2026,"45 Lê Văn Việt, Quận 9, TP.HCM",26/07/2026,
+DH003,Túi xách da nam cao cấp,1250000,Đang xử lý,27/07/2026,"78 Điện Biên Phủ, Quận 3, TP.HCM",,
+DH004,Đồng hồ Casio Edifice EFV-100,2500000,Đã hủy,23/07/2026,,,Khách hàng yêu cầu hủy
+DH005,Macbook Air M2 13 inch,28900000,Đã giao,20/07/2026,"56 Trần Hưng Đạo, Quận 5, TP.HCM",24/07/2026,

@@ -4,6 +4,7 @@ import re
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
+import csv
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from tools import AVAILABLE_TOOLS
@@ -22,6 +23,19 @@ def index():
     # Phục vụ file ui/index.html khi truy cập vào http://127.0.0.1:5000/
     ui_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'ui')
     return send_from_directory(ui_dir, 'index.html')
+
+@app.route('/api/orders', methods=['GET'])
+def get_orders():
+    orders = []
+    csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'orders.csv')
+    try:
+        with open(csv_path, mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                orders.append(row)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify(orders)
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
