@@ -19,7 +19,7 @@ if sys.stdout.encoding != 'utf-8':
         pass
 
 # Import các thành phần từ file của Role 2, Role 3 & Multi-Provider Adapter
-from tools import AVAILABLE_TOOLS, get_weather, search_flights
+from tools import AVAILABLE_TOOLS
 from prompts import CHATBOT_BASELINE_PROMPT, REACT_SYSTEM_PROMPT, MAX_ITERATIONS
 from providers import get_llm_provider
 
@@ -93,7 +93,12 @@ def run_react_agent(user_query: str, provider):
             if tool_name in AVAILABLE_TOOLS:
                 tool_func = AVAILABLE_TOOLS[tool_name]
                 try:
-                    obs = tool_func(tool_arg)
+                    # Hỗ trợ truyền nhiều tham số nếu có dấu phẩy
+                    if "," in tool_arg:
+                        args = [arg.strip(" '\"") for arg in tool_arg.split(",", 1)]
+                        obs = tool_func(*args)
+                    else:
+                        obs = tool_func(tool_arg)
                 except Exception as e:
                     obs = f"Lỗi thực thi tool: {str(e)}"
             else:
